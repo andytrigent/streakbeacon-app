@@ -1,0 +1,129 @@
+{
+"rules": [
+{
+"pattern": ".*pnpm.*|.*yarn.*",
+"replacement": "Use npm instead of pnpm/yarn for package management.",
+"description": "We exclusively use npm for package management in this project."
+},
+{
+"pattern": ".*npm install -g.*",
+"replacement": "Avoid global npm installations. Use npx for one-off commands.",
+"description": "Keep dependencies local to the project."
+},
+{
+"pattern": ".*next@\\d+.*|.*next@latest.*",
+"replacement": "Use Next.js version 15.1.6",
+"description": "Maintain consistent Next.js version across the project."
+},
+{
+"pattern": ".*react@\\d+.*|.*react@latest.*",
+"replacement": "Use React version 19.0.0",
+"description": "Maintain consistent React version across the project."
+},
+{
+"pattern": ".*node-version.*",
+"replacement": "Use Node.js version >= 18.17 (recommended: 20.x LTS)",
+"description": "Ensure compatible Node.js version."
+},
+{
+"pattern": ".*shadcn-ui.*",
+"replacement": "Use 'npx shadcn add' instead of 'npx shadcn-ui add' for adding components.",
+"description": "We use shadcn (not shadcn-ui) for UI components."
+},
+{
+"pattern": ".*test\\(.*\\).*",
+"replacement": "Use descriptive test names and follow the AAA pattern (Arrange, Act, Assert).",
+"description": "Ensure test names are descriptive and follow proper testing patterns."
+},
+{
+"pattern": ".*expect\\(.*\\).*",
+"replacement": "Add meaningful error messages to test assertions.",
+"description": "Make test failures easy to understand with clear error messages."
+},
+{
+"pattern": ".*test\\.only.*",
+"replacement": "Remove .only from tests before committing.",
+"description": "Ensure all tests run in CI by removing .only."
+},
+{
+"pattern": ".*package\\.json.*version.*",
+"replacement": "Follow semantic versioning (major.minor.patch) for all dependencies.",
+"description": "Maintain consistent versioning across the project."
+},
+{
+"pattern": ".*@latest.*",
+"replacement": "Specify exact versions instead of using @latest tag.",
+"description": "Prevent unexpected updates by using fixed versions."
+},
+{
+"pattern": ".*",
+"prefix": "💡 ",
+"description": "Ensure all AI suggestions start with 💡 to verify rules are applied."
+},
+{
+"pattern": "console.log",
+"replacement": "Use a custom logger instead of console.log for structured debugging.",
+"description": "Avoid console.log; use a proper logging mechanism."
+},
+{
+"pattern": "any",
+"replacement": "Specify a more explicit TypeScript type instead of 'any'.",
+"description": "Use specific types/interfaces instead of 'any' to ensure type safety."
+},
+{
+"pattern": ".*TODO.*",
+"replacement": "Add more details and a due date when using TODO comments.",
+"description": "Ensure TODOs have clear action points."
+},
+{
+"pattern": ".*var .*",
+"replacement": "Use 'const' or 'let' instead of 'var'.",
+"description": "Favor 'const' or 'let' over 'var' to avoid scoping issues."
+},
+{
+"pattern": ".*use client.*",
+"replacement": "Use 'use client' only when necessary for UI interactions.",
+"description": "Favor React Server Components; use 'use client' only for client-side interactions."
+},
+{
+"pattern": ".*fetch\\(",
+"replacement": "Use Next.js Server Actions or API routes instead of raw fetch calls.",
+"description": "Optimize data fetching by using Next.js built-in mechanisms."
+},
+{
+"pattern": ".*Shadcn UI.*",
+"replacement": "Import Shadcn UI components from '@/components/ui'.",
+"description": "Ensure correct component imports for Shadcn UI."
+},
+{
+"pattern": ".*className=.*",
+"replacement": "Use the 'cn()' utility function for class names.",
+"description": "Ensure Tailwind classes are managed properly with cn() utility."
+},
+{
+"pattern": ".*useState.*",
+"replacement": "Consider using useReducer or Context API for complex state.",
+"description": "Avoid excessive useState calls; use centralized state management when needed."
+},
+{
+"pattern": ".*next/image.*",
+"replacement": "Ensure you use 'next/image' for all images instead of <img>.",
+"description": "Optimize images with Next.js built-in 'next/image' component."
+},
+{
+"pattern": ".*components/ui.*",
+"replacement": "Place reusable UI components in 'components/ui'.",
+"description": "Follow file structure: Keep UI components modular."
+},
+{
+"pattern": ".*export default function.*",
+"replacement": "Prefer named exports over default exports.",
+"description": "Encourage named exports for better code maintainability."
+},
+{
+"pattern": ".*global styles.*",
+"replacement": "Use Tailwind CSS utility classes instead of unnecessary global styles.",
+"description": "Encourage using Tailwind for styling over global stylesheets."
+}
+]
+}
