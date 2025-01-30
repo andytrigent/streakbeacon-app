@@ -33,6 +33,9 @@ body {
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
     --radius: 0.5rem;
+    --beacon-green: 148, 57%, 45%; /* #27AE60 */
+    --sky-blue: 204, 70%, 53%; /* #2D9CDB */
+    --dark-gray: 0, 0%, 12%; /* #1E1E1E */
   }
   .dark {
     --background: 222.2 84% 4.9%;
