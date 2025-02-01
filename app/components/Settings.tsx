@@ -125,7 +125,7 @@ export default function Settings({ isOpen, onClose }: { isOpen: boolean; onClose
                   onClick={validateAndSaveConfig}
                   className="w-full bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600"
                 >
-                  Validate & Save Configuration
+                  Validate &amp; Save Configuration
                 </button>
               </div>
             )}

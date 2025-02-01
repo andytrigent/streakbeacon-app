@@ -8,6 +8,7 @@ import { getDb, isInitialized } from "@/lib/firebase"
 type TaskFrequency = "daily" | "weekly" | "monthly" | "biweekly" | "future"
 
 interface Task {
+  id?: string
   text: string
   frequency: TaskFrequency
   dueDate?: Date
