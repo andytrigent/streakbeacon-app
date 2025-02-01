@@ -8,12 +8,10 @@ import AddTaskPopup from "./AddTaskPopup"
 
 export default function AddTaskBar() {
   const [isPopupOpen, setIsPopupOpen] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
 
   const handleAddTask = async (task: { text: string; frequency: string; dueDate?: Date }) => {
     if (!isInitialized()) return
 
-    setIsLoading(true)
     try {
       const db = getDb()
       const tasksRef = collection(db, "tasks")
@@ -25,7 +23,7 @@ export default function AddTaskBar() {
     } catch (error) {
       console.error("Error adding task:", error)
     } finally {
-      setIsLoading(false)
+
       setIsPopupOpen(false)
     }
   }

@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { Share2, Loader2 } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { collection, getDocs, query, where } from "firebase/firestore"
+import { collection, getDocs } from "firebase/firestore"
 import { getDb, isInitialized } from "@/lib/firebase"
 
 interface DayData {
