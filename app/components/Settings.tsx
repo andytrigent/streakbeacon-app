@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useContext } from "react"
-import { Download, Moon, Sun, ChevronDown, ChevronUp, HelpCircle } from "lucide-react"
+import { Download, Moon, Sun, HelpCircle } from "lucide-react"
 import { type FirebaseConfig, initFirebase } from "@/lib/firebase"
 import { FirebaseContext } from "@/app/(client)/FirebaseProvider"
 
@@ -16,7 +16,6 @@ const FIREBASE_FIELD_DESCRIPTIONS: Record<keyof FirebaseConfig, string> = {
 
 export default function Settings({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
   const [isDarkMode, setIsDarkMode] = useState(false)
-  const [showFirebaseSetup, setShowFirebaseSetup] = useState(true)
   const { isReady, config: savedConfig, reinitialize } = useContext(FirebaseContext)
   const [firebaseConfig, setFirebaseConfig] = useState<FirebaseConfig>(() => savedConfig || {
     apiKey: "",
@@ -106,37 +105,28 @@ export default function Settings({ isOpen, onClose }: { isOpen: boolean; onClose
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center">
       <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl w-[32rem] max-h-[90vh] overflow-y-auto">
         <h2 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">Settings</h2>
-        <div className="space-y-6">
-          <div className="border rounded-lg p-4 bg-gray-50 dark:bg-gray-900">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="text-lg font-semibold">Firebase Configuration</span>
-                  {connectionStatus === 'connected' || isReady ? (
-                    <span className="text-sm text-green-500">Connected ✓</span>
-                  ) : connectionStatus === 'checking' ? (
-                    <span className="text-sm text-yellow-500">Checking...</span>
-                  ) : (
-                    <span className="text-sm text-red-500">(Setup Required)</span>
-                  )}
-                </div>
-              </div>
-              <button
-                onClick={() => setShowFirebaseSetup(!showFirebaseSetup)}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                {showFirebaseSetup ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
-              </button>
-            </div>
-            <button
-              onClick={() => setShowFirebaseSetup(!showFirebaseSetup)}
-              className="w-full flex items-center justify-between text-left"
-            >
-              <span className="text-lg font-semibold">Firebase Configuration</span>
-              {showFirebaseSetup ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
-            </button>
+        
+        <button
+          className="w-full mb-4 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold flex items-center justify-center gap-2"
+          onClick={() => document.getElementById('firebase-config-section')?.scrollIntoView({ behavior: 'smooth' })}
+        >
+          {isReady ? '✓ Firebase Configured' : '⚙️ Configure Firebase'}
+        </button>
 
-            {showFirebaseSetup && (
+        <div className="space-y-6">
+          <div id="firebase-config-section" className="border rounded-lg p-4 bg-gray-50 dark:bg-gray-900">
+            <div className="flex items-center gap-2 mb-4">
+              <h3 className="text-lg font-semibold">Firebase Configuration</h3>
+              {connectionStatus === 'connected' || isReady ? (
+                <span className="text-sm text-green-500">Connected ✓</span>
+              ) : connectionStatus === 'checking' ? (
+                <span className="text-sm text-yellow-500">Checking...</span>
+              ) : (
+                <span className="text-sm text-red-500">(Setup Required)</span>
+              )}
+            </div>
+
+            {/* Firebase configuration form */}
               <div className="mt-4 space-y-6">
                 <div className="prose dark:prose-invert text-sm">
                   <h4>Setup Instructions:</h4>
@@ -184,31 +174,31 @@ export default function Settings({ isOpen, onClose }: { isOpen: boolean; onClose
                   </div>
                 )}
 
-                <div className="space-y-2">
-                  <button
-                    onClick={testFirebaseConnection}
-                    className="w-full bg-green-500 text-white p-2 rounded-md hover:bg-green-600"
-                  >
-                    Test Connection
-                  </button>
-
-                  <button
-                    onClick={saveFirebaseConfiguration}
-                    className="w-full bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600"
-                    disabled={connectionStatus !== 'connected'}
-                  >
-                    Save Configuration
-                  </button>
-
+                <div className="space-y-4">
+                  <div className="flex gap-4">
+                    <button
+                      onClick={saveFirebaseConfiguration}
+                      className="flex-1 bg-blue-600 text-white p-3 rounded-md hover:bg-blue-700 font-semibold"
+                    >
+                      Save Configuration
+                    </button>
+                    <button
+                      onClick={testFirebaseConnection}
+                      disabled={connectionStatus === 'checking'}
+                      className="flex-1 bg-gray-100 text-gray-900 dark:bg-gray-700 dark:text-white p-3 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 font-medium disabled:opacity-50"
+                    >
+                      {connectionStatus === 'checking' ? 'Testing...' : 'Test Connection (Optional)'}
+                    </button>
+                  </div>
                   <button
                     onClick={resetFirebaseConfiguration}
-                    className="w-full bg-red-500 text-white p-2 rounded-md hover:bg-red-600"
+                    className="w-full bg-red-100 text-red-600 dark:bg-red-900/20 dark:text-red-400 p-2 rounded-md hover:bg-red-200 dark:hover:bg-red-900/30 font-medium"
                   >
                     Reset Configuration
                   </button>
                 </div>
               </div>
-            )}
+            
           </div>
 
           <div className="flex items-center justify-between">

@@ -1,12 +1,16 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useContext } from "react"
 import { Settings } from "lucide-react"
 import SettingsComponent from "@/app/components/Settings"
+import { FirebaseContext } from "@/app/(client)/FirebaseProvider"
 
 export default function Header() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
-  const motivationalMessage = "Loading motivation..."
+  const { isReady } = useContext(FirebaseContext)
+  const motivationalMessage = !isReady 
+    ? "Configure Firebase in Settings to get started!" 
+    : "Loading motivation..."
 
   return (
     <header className="bg-white dark:bg-gray-800 shadow-sm">
