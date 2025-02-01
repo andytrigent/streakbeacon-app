@@ -4,7 +4,7 @@ import { useState, useEffect, useContext } from "react"
 import { CheckCircle, Circle, Trash2, Edit2, Loader2 } from "lucide-react"
 import { collection, doc, getDocs, updateDoc, deleteDoc } from "firebase/firestore"
 import { getDb } from "@/lib/firebase"
-import { FirebaseContext } from "@/app/(client)/FirebaseProvider"
+import { FirebaseContext } from "@/app/providers/FirebaseProvider"
 
 type TaskFrequency = "daily" | "weekly" | "monthly" | "biweekly" | "future"
 

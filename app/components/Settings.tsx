@@ -3,7 +3,7 @@
 import { useState, useEffect, useContext } from "react"
 import { Download, Moon, Sun, ChevronDown, ChevronUp, HelpCircle } from "lucide-react"
 import { type FirebaseConfig, initFirebase } from "@/lib/firebase"
-import { FirebaseContext } from "@/app/(client)/FirebaseProvider"
+import { FirebaseContext } from "@/app/providers/FirebaseProvider"
 
 const FIREBASE_FIELD_DESCRIPTIONS: Record<keyof FirebaseConfig, string> = {
   apiKey: "The API key from your Firebase project settings",
