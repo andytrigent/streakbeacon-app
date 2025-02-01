@@ -1,29 +1,58 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useContext } from "react"
 import { X } from "lucide-react"
+import { collection, addDoc } from "firebase/firestore"
+import { getDb } from "@/lib/firebase"
+import { FirebaseContext } from "@/app/(client)/FirebaseProvider"
 
 type TaskFrequency = "daily" | "weekly" | "monthly" | "biweekly" | "future"
+
+interface Task {
+  id?: string
+  text: string
+  frequency: TaskFrequency
+  dueDate?: Date
+  completed: boolean
+  createdAt: Date
+}
 
 interface AddTaskPopupProps {
   isOpen: boolean
   onClose: () => void
-  onAddTask: (task: { text: string; frequency: TaskFrequency; dueDate?: Date }) => void
+  onAddTask: (task: Task) => void
 }
 
 export default function AddTaskPopup({ isOpen, onClose, onAddTask }: AddTaskPopupProps) {
+  const { isReady } = useContext(FirebaseContext)
   const [taskText, setTaskText] = useState("")
   const [frequency, setFrequency] = useState<TaskFrequency>("daily")
   const [dueDate, setDueDate] = useState<Date | undefined>(undefined)
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (taskText.trim()) {
-      onAddTask({ text: taskText, frequency, dueDate })
+    if (!taskText.trim() || !isReady) return
+
+    try {
+      const db = getDb()
+      const tasksRef = collection(db, "tasks")
+      const newTask = {
+        text: taskText,
+        frequency,
+        dueDate,
+        completed: false,
+        createdAt: new Date()
+      }
+      
+      const docRef = await addDoc(tasksRef, newTask)
+      onAddTask({ ...newTask, id: docRef.id })
+      
       setTaskText("")
       setFrequency("daily")
       setDueDate(undefined)
       onClose()
+    } catch (error) {
+      console.error("Error adding task:", error)
     }
   }
 
@@ -84,12 +113,18 @@ export default function AddTaskPopup({ isOpen, onClose, onAddTask }: AddTaskPopu
               />
             </div>
           )}
-          <button
-            type="submit"
-            className="w-full bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
-          >
-            Add Task
-          </button>
+          {!isReady ? (
+            <p className="text-center text-gray-500 dark:text-gray-400">
+              Please configure Firebase in Settings to add tasks
+            </p>
+          ) : (
+            <button
+              type="submit"
+              className="w-full bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+            >
+              Add Task
+            </button>
+          )}
         </form>
       </div>
     </div>

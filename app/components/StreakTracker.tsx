@@ -1,8 +1,11 @@
 "use client"
 
-import { useState } from "react"
-import { Share2 } from "lucide-react"
+import { useState, useEffect, useContext } from "react"
+import { Share2, Loader2 } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { collection, getDocs } from "firebase/firestore"
+import { getDb } from "@/lib/firebase"
+import { FirebaseContext } from "@/app/(client)/FirebaseProvider"
 
 interface DayData {
   date: Date
@@ -12,9 +15,50 @@ interface DayData {
   isFuture: boolean
 }
 
+interface Task {
+  id: string
+  text: string
+  completed: boolean
+  frequency: string
+  dueDate?: Date
+  createdAt: Date
+}
+
 export default function StreakTracker() {
+  const { isReady } = useContext(FirebaseContext)
   const [hoveredCell, setHoveredCell] = useState<DayData | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [tasks, setTasks] = useState<Task[]>([])
   const currentDate = new Date()
+
+  useEffect(() => {
+    async function fetchTasks() {
+      if (!isReady) {
+        setIsLoading(false)
+        return
+      }
+
+      try {
+        const db = getDb()
+        const tasksRef = collection(db, "tasks")
+        const snapshot = await getDocs(tasksRef)
+        const loadedTasks = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data(),
+          createdAt: doc.data().createdAt?.toDate() || new Date(),
+          dueDate: doc.data().dueDate?.toDate() || undefined
+        })) as Task[]
+        
+        setTasks(loadedTasks)
+      } catch (error) {
+        console.error("Error fetching tasks:", error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchTasks()
+  }, [isReady])
 
   const getColor = (completedTasks: number, totalTasks: number, isCurrentMonth: boolean, isFuture: boolean) => {
     if (!isCurrentMonth || isFuture) return "bg-gray-100 dark:bg-gray-800"
@@ -31,7 +75,6 @@ export default function StreakTracker() {
   const generateMonthData = (date: Date) => {
     const data: DayData[][] = []
     const firstDay = new Date(date.getFullYear(), date.getMonth(), 1)
-    const lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 0)
 
     // Start from the last Monday of the previous month
     const startDate = new Date(firstDay)
@@ -44,11 +87,25 @@ export default function StreakTracker() {
         currentDate.setDate(startDate.getDate() + week * 7 + day)
         const isCurrentMonth = currentDate.getMonth() === date.getMonth()
         const isFuture = currentDate > new Date()
-        const totalTasks = isCurrentMonth && !isFuture ? 7 : 0 // Example: 7 tasks planned per day
+
+        // Get tasks for this date
+        const dayStart = new Date(currentDate)
+        dayStart.setHours(0, 0, 0, 0)
+        const dayEnd = new Date(currentDate)
+        dayEnd.setHours(23, 59, 59, 999)
+
+        const dayTasks = tasks.filter(task => {
+          const taskDate = task.dueDate || task.createdAt
+          return taskDate >= dayStart && taskDate <= dayEnd
+        })
+
+        const totalTasks = dayTasks.length
+        const completedTasks = dayTasks.filter(task => task.completed).length
+
         row.push({
           date: currentDate,
-          completedTasks: isFuture ? 0 : Math.floor(Math.random() * (totalTasks + 1)),
-          totalTasks,
+          completedTasks: isFuture ? 0 : completedTasks,
+          totalTasks: isFuture ? 0 : totalTasks,
           isCurrentMonth,
           isFuture,
         })
@@ -64,7 +121,10 @@ export default function StreakTracker() {
     <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md flex-grow">
       <div className="flex justify-between items-center mb-6">
         <div className="flex items-center gap-4">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Streak Tracker</h2>
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+            Streak Tracker
+            {isLoading && <Loader2 className="ml-2 w-4 h-4 inline animate-spin" />}
+          </h2>
           <Select defaultValue={`${currentDate.getFullYear()}-${currentDate.getMonth() + 1}`}>
             <SelectTrigger className="w-[180px]">
               <SelectValue>
@@ -84,7 +144,17 @@ export default function StreakTracker() {
       </div>
 
       <div className="relative">
-        {/* Weekday headers */}
+        {!isReady ? (
+          <div className="text-center py-4 text-gray-500">
+            Please configure Firebase in Settings to view your streak data
+          </div>
+        ) : isLoading ? (
+          <div className="text-center py-4">
+            <Loader2 className="w-6 h-6 animate-spin mx-auto" />
+          </div>
+        ) : (
+          <>
+            {/* Weekday headers */}
         <div className="grid grid-cols-7 gap-1 mb-2">
           {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((day) => (
             <div key={day} className="text-center text-xs font-medium text-gray-500 dark:text-gray-400">
@@ -153,6 +223,8 @@ export default function StreakTracker() {
               </>
             )}
           </div>
+        )}
+          </>
         )}
       </div>
     </div>
