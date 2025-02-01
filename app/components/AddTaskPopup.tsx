@@ -4,7 +4,7 @@ import { useState, useContext } from "react"
 import { X } from "lucide-react"
 import { collection, addDoc } from "firebase/firestore"
 import { getDb } from "@/lib/firebase"
-import { FirebaseContext } from "@/app/(client)/FirebaseProvider"
+import { FirebaseContext } from "@/app/providers/FirebaseProvider"
 
 type TaskFrequency = "daily" | "weekly" | "monthly" | "biweekly" | "future"
 

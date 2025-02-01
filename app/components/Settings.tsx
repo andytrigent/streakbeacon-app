@@ -3,7 +3,7 @@
 import { useState, useEffect, useContext } from "react"
 import { Download, Moon, Sun, ChevronDown, ChevronUp, HelpCircle } from "lucide-react"
 import { type FirebaseConfig, initFirebase } from "@/lib/firebase"
-import { FirebaseContext } from "@/app/(client)/FirebaseProvider"
+import { FirebaseContext } from "@/app/providers/FirebaseProvider"
 
 const FIREBASE_FIELD_DESCRIPTIONS: Record<keyof FirebaseConfig, string> = {
   apiKey: "The API key from your Firebase project settings",
@@ -18,7 +18,8 @@ export default function Settings({ isOpen, onClose }: { isOpen: boolean; onClose
   const [isDarkMode, setIsDarkMode] = useState(false)
   const [showFirebaseSetup, setShowFirebaseSetup] = useState(true)
   const { isReady, config: savedConfig, reinitialize } = useContext(FirebaseContext)
-  const [firebaseConfig, setFirebaseConfig] = useState<FirebaseConfig>(() => savedConfig || {
+  const [isInitialized, setIsInitialized] = useState(false)
+  const [firebaseConfig, setFirebaseConfig] = useState<FirebaseConfig>({
     apiKey: "",
     authDomain: "",
     projectId: "",
@@ -26,6 +27,14 @@ export default function Settings({ isOpen, onClose }: { isOpen: boolean; onClose
     messagingSenderId: "",
     appId: ""
   })
+
+  useEffect(() => {
+    if (savedConfig) {
+      setFirebaseConfig(savedConfig)
+      setConnectionStatus('connected')
+    }
+    setIsInitialized(true)
+  }, [savedConfig])
   const [configError, setConfigError] = useState<string>("")
   const [testStatus, setTestStatus] = useState<{ type: 'success' | 'error', message: string } | null>(null)
   const [connectionStatus, setConnectionStatus] = useState<'connected' | 'disconnected' | 'checking'>('checking')
@@ -98,6 +107,7 @@ export default function Settings({ isOpen, onClose }: { isOpen: boolean; onClose
       setFirebaseConfig(savedConfig)
       setConnectionStatus('connected')
     }
+    setIsInitialized(true)
   }, [savedConfig])
 
   if (!isOpen) return null
@@ -107,19 +117,19 @@ export default function Settings({ isOpen, onClose }: { isOpen: boolean; onClose
       <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl w-[32rem] max-h-[90vh] overflow-y-auto">
         <h2 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">Settings</h2>
         <div className="space-y-6">
-          <div className="border rounded-lg p-4 bg-gray-50 dark:bg-gray-900">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="text-lg font-semibold">Firebase Configuration</span>
-                  {connectionStatus === 'connected' || isReady ? (
+          <div className="border rounded-lg p-4 bg-gray-50 dark:bg-gray-900 space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="text-lg font-semibold">Firebase Configuration</span>
+                {isInitialized && (
+                  connectionStatus === 'connected' || isReady ? (
                     <span className="text-sm text-green-500">Connected ✓</span>
                   ) : connectionStatus === 'checking' ? (
                     <span className="text-sm text-yellow-500">Checking...</span>
                   ) : (
                     <span className="text-sm text-red-500">(Setup Required)</span>
-                  )}
-                </div>
+                  )
+                )}
               </div>
               <button
                 onClick={() => setShowFirebaseSetup(!showFirebaseSetup)}
@@ -128,13 +138,6 @@ export default function Settings({ isOpen, onClose }: { isOpen: boolean; onClose
                 {showFirebaseSetup ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
               </button>
             </div>
-            <button
-              onClick={() => setShowFirebaseSetup(!showFirebaseSetup)}
-              className="w-full flex items-center justify-between text-left"
-            >
-              <span className="text-lg font-semibold">Firebase Configuration</span>
-              {showFirebaseSetup ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
-            </button>
 
             {showFirebaseSetup && (
               <div className="mt-4 space-y-6">

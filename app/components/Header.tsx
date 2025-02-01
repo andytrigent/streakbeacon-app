@@ -1,8 +1,8 @@
 "use client"
 
 import { useState } from "react"
-import { Settings } from "lucide-react"
-import SettingsComponent from "@/app/components/Settings"
+import { Settings as SettingsIcon } from "lucide-react"
+import Settings from "@/app/components/Settings"
 
 export default function Header() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
@@ -20,12 +20,12 @@ export default function Header() {
             onClick={() => setIsSettingsOpen(true)}
             className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"
           >
-            <Settings className="w-6 h-6 text-gray-600 dark:text-gray-300" />
+            <SettingsIcon className="w-6 h-6 text-gray-600 dark:text-gray-300" />
           </button>
         </div>
         <p className="text-center text-lg text-gray-700 dark:text-gray-300 italic">{motivationalMessage}</p>
       </div>
-      <SettingsComponent isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
+      <Settings isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
     </header>
   )
 }
