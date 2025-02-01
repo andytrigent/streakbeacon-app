@@ -1,49 +1,119 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { CheckCircle, Circle, Trash2, Edit2 } from "lucide-react"
+import { collection, doc, getDocs, updateDoc, deleteDoc } from "firebase/firestore"
+import { getDb, isInitialized } from "@/lib/firebase"
 
 type TaskFrequency = "daily" | "weekly" | "monthly" | "biweekly" | "future"
 
-type Task = {
-  id: number
+interface Task {
+  id: string
   text: string
   completed: boolean
   frequency: TaskFrequency
   dueDate?: Date
+  createdAt: Date
 }
 
 export default function TaskPanel() {
-  const [tasks, setTasks] = useState<Task[]>([
-    { id: 1, text: "Complete project proposal", completed: false, frequency: "daily" },
-    { id: 2, text: "Go for a 30-minute run", completed: true, frequency: "weekly" },
-    { id: 3, text: "Read 20 pages of book", completed: false, frequency: "daily" },
-    { id: 4, text: "Monthly team meeting", completed: false, frequency: "monthly", dueDate: new Date(2023, 5, 15) },
-  ])
-  const [editingTaskId, setEditingTaskId] = useState<number | null>(null)
+  const [tasks, setTasks] = useState<Task[]>([])
+  const [editingTaskId, setEditingTaskId] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
 
-  const toggleTask = (id: number) => {
-    setTasks(tasks.map((task) => (task.id === id ? { ...task, completed: !task.completed } : task)))
+  useEffect(() => {
+    async function fetchTasks() {
+      if (!isInitialized()) {
+        setIsLoading(false)
+        return
+      }
+
+      try {
+        const db = getDb()
+        const tasksRef = collection(db, "tasks")
+        const snapshot = await getDocs(tasksRef)
+        const loadedTasks = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data(),
+          createdAt: doc.data().createdAt?.toDate() || new Date(),
+          dueDate: doc.data().dueDate?.toDate() || undefined
+        })) as Task[]
+        
+        setTasks(loadedTasks.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime()))
+      } catch (error) {
+        console.error("Error fetching tasks:", error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchTasks()
+  }, [])
+
+  const toggleTask = async (id: string) => {
+    if (!isInitialized()) return
+
+    const task = tasks.find(t => t.id === id)
+    if (!task) return
+
+    try {
+      const db = getDb()
+      const taskRef = doc(db, "tasks", id)
+      await updateDoc(taskRef, {
+        completed: !task.completed
+      })
+      setTasks(tasks.map((t) => (t.id === id ? { ...t, completed: !t.completed } : t)))
+    } catch (error) {
+      console.error("Error toggling task:", error)
+    }
   }
 
-  const deleteTask = (id: number) => {
-    setTasks(tasks.filter((task) => task.id !== id))
+  const deleteTask = async (id: string) => {
+    if (!isInitialized()) return
+
+    try {
+      const db = getDb()
+      const taskRef = doc(db, "tasks", id)
+      await deleteDoc(taskRef)
+      setTasks(tasks.filter((task) => task.id !== id))
+    } catch (error) {
+      console.error("Error deleting task:", error)
+    }
   }
 
-  const startEditingTask = (id: number) => {
+  const startEditingTask = (id: string) => {
     setEditingTaskId(id)
   }
 
-  const saveEditedTask = (id: number, newText: string) => {
-    setTasks(tasks.map((task) => (task.id === id ? { ...task, text: newText } : task)))
-    setEditingTaskId(null)
+  const saveEditedTask = async (id: string, newText: string) => {
+    if (!isInitialized()) return
+
+    try {
+      const db = getDb()
+      const taskRef = doc(db, "tasks", id)
+      await updateDoc(taskRef, { text: newText })
+      setTasks(tasks.map((task) => (task.id === id ? { ...task, text: newText } : task)))
+    } catch (error) {
+      console.error("Error updating task:", error)
+    } finally {
+      setEditingTaskId(null)
+    }
   }
 
   return (
     <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md w-full md:w-1/3">
       <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Tasks</h2>
-      <ul className="space-y-2">
-        {tasks.map((task) => (
+      {isLoading ? (
+        <div className="text-center py-4 text-gray-500">Loading tasks...</div>
+      ) : !isInitialized() ? (
+        <div className="text-center py-4 text-gray-500">
+          Please configure Firebase in Settings to manage tasks
+        </div>
+      ) : tasks.length === 0 ? (
+        <div className="text-center py-4 text-gray-500">No tasks yet</div>
+      ) : (
+        <ul className="space-y-2">
+          {tasks.map((task) => (
           <li key={task.id} className="flex items-center justify-between">
             <div className="flex items-center flex-grow">
               <button onClick={() => toggleTask(task.id)} className="mr-2">
@@ -78,7 +148,8 @@ export default function TaskPanel() {
             </div>
           </li>
         ))}
-      </ul>
+        </ul>
+      )}
     </div>
   )
 }
