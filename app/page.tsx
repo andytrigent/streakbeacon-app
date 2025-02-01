@@ -1,8 +1,8 @@
-import Header from "./components/Header"
-import StreakTracker from "./components/StreakTracker"
-import TaskPanel from "./components/TaskPanel"
-import AddTaskBar from "./components/AddTaskBar"
-import Footer from "./components/Footer"
+import Header from "@/app/components/Header"
+import StreakTracker from "@/app/components/StreakTracker"
+import TaskPanel from "@/app/components/TaskPanel"
+import AddTaskBar from "@/app/components/AddTaskBar"
+import Footer from "@/app/components/Footer"
 
 export default function Home() {
   return (

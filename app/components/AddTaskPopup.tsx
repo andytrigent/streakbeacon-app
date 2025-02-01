@@ -1,9 +1,10 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useContext } from "react"
 import { X } from "lucide-react"
 import { collection, addDoc } from "firebase/firestore"
-import { getDb, isInitialized } from "@/lib/firebase"
+import { getDb } from "@/lib/firebase"
+import { FirebaseContext } from "@/app/(client)/FirebaseProvider"
 
 type TaskFrequency = "daily" | "weekly" | "monthly" | "biweekly" | "future"
 
@@ -23,13 +24,14 @@ interface AddTaskPopupProps {
 }
 
 export default function AddTaskPopup({ isOpen, onClose, onAddTask }: AddTaskPopupProps) {
+  const { isReady } = useContext(FirebaseContext)
   const [taskText, setTaskText] = useState("")
   const [frequency, setFrequency] = useState<TaskFrequency>("daily")
   const [dueDate, setDueDate] = useState<Date | undefined>(undefined)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!taskText.trim() || !isInitialized()) return
+    if (!taskText.trim() || !isReady) return
 
     try {
       const db = getDb()
@@ -111,7 +113,7 @@ export default function AddTaskPopup({ isOpen, onClose, onAddTask }: AddTaskPopu
               />
             </div>
           )}
-          {!isInitialized() ? (
+          {!isReady ? (
             <p className="text-center text-gray-500 dark:text-gray-400">
               Please configure Firebase in Settings to add tasks
             </p>

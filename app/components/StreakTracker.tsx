@@ -1,10 +1,11 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useContext } from "react"
 import { Share2, Loader2 } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { collection, getDocs } from "firebase/firestore"
-import { getDb, isInitialized } from "@/lib/firebase"
+import { getDb } from "@/lib/firebase"
+import { FirebaseContext } from "@/app/(client)/FirebaseProvider"
 
 interface DayData {
   date: Date
@@ -24,6 +25,7 @@ interface Task {
 }
 
 export default function StreakTracker() {
+  const { isReady } = useContext(FirebaseContext)
   const [hoveredCell, setHoveredCell] = useState<DayData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [tasks, setTasks] = useState<Task[]>([])
@@ -31,7 +33,7 @@ export default function StreakTracker() {
 
   useEffect(() => {
     async function fetchTasks() {
-      if (!isInitialized()) {
+      if (!isReady) {
         setIsLoading(false)
         return
       }
@@ -56,7 +58,7 @@ export default function StreakTracker() {
     }
 
     fetchTasks()
-  }, [])
+  }, [isReady])
 
   const getColor = (completedTasks: number, totalTasks: number, isCurrentMonth: boolean, isFuture: boolean) => {
     if (!isCurrentMonth || isFuture) return "bg-gray-100 dark:bg-gray-800"
@@ -142,7 +144,7 @@ export default function StreakTracker() {
       </div>
 
       <div className="relative">
-        {!isInitialized() ? (
+        {!isReady ? (
           <div className="text-center py-4 text-gray-500">
             Please configure Firebase in Settings to view your streak data
           </div>

@@ -1,9 +1,9 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { initFirebase } from "@/lib/firebase"
+import { useState, useEffect, useContext } from "react"
 import { Download, Moon, Sun, ChevronDown, ChevronUp, HelpCircle } from "lucide-react"
-import { type FirebaseConfig } from "@/lib/firebase"
+import { type FirebaseConfig, initFirebase } from "@/lib/firebase"
+import { FirebaseContext } from "@/app/(client)/FirebaseProvider"
 
 const FIREBASE_FIELD_DESCRIPTIONS: Record<keyof FirebaseConfig, string> = {
   apiKey: "The API key from your Firebase project settings",
@@ -17,8 +17,8 @@ const FIREBASE_FIELD_DESCRIPTIONS: Record<keyof FirebaseConfig, string> = {
 export default function Settings({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
   const [isDarkMode, setIsDarkMode] = useState(false)
   const [showFirebaseSetup, setShowFirebaseSetup] = useState(true)
-  const [isFirebaseInitialized, setIsFirebaseInitialized] = useState(false)
-  const [firebaseConfig, setFirebaseConfig] = useState<FirebaseConfig>({
+  const { isReady, config: savedConfig, reinitialize } = useContext(FirebaseContext)
+  const [firebaseConfig, setFirebaseConfig] = useState<FirebaseConfig>(() => savedConfig || {
     apiKey: "",
     authDomain: "",
     projectId: "",
@@ -68,7 +68,7 @@ export default function Settings({ isOpen, onClose }: { isOpen: boolean; onClose
     try {
       localStorage.setItem('firebaseConfig', JSON.stringify(firebaseConfig))
       setConfigError("")
-      setIsFirebaseInitialized(true)
+      reinitialize()
       setTestStatus({ type: 'success', message: 'Firebase configuration saved successfully!' })
       setConnectionStatus('connected')
     } catch (error) {
@@ -87,28 +87,18 @@ export default function Settings({ isOpen, onClose }: { isOpen: boolean; onClose
       messagingSenderId: "",
       appId: ""
     })
-    setIsFirebaseInitialized(false)
     setConnectionStatus('disconnected')
     setTestStatus(null)
     setConfigError("")
   }
 
-  // Load saved config on mount
+  // Update local state when global config changes
   useEffect(() => {
-    const savedConfig = localStorage.getItem('firebaseConfig')
     if (savedConfig) {
-      try {
-        const config = JSON.parse(savedConfig)
-        setFirebaseConfig(config)
-        initFirebase(config)
-        setIsFirebaseInitialized(true)
-        setConnectionStatus('connected')
-      } catch (error) {
-        console.error('Failed to load saved Firebase config:', error)
-        setConnectionStatus('disconnected')
-      }
+      setFirebaseConfig(savedConfig)
+      setConnectionStatus('connected')
     }
-  }, [])
+  }, [savedConfig])
 
   if (!isOpen) return null
 
@@ -122,14 +112,12 @@ export default function Settings({ isOpen, onClose }: { isOpen: boolean; onClose
               <div>
                 <div className="flex items-center gap-2">
                   <span className="text-lg font-semibold">Firebase Configuration</span>
-                  {connectionStatus === 'connected' ? (
+                  {connectionStatus === 'connected' || isReady ? (
                     <span className="text-sm text-green-500">Connected ✓</span>
                   ) : connectionStatus === 'checking' ? (
                     <span className="text-sm text-yellow-500">Checking...</span>
-                  ) : !isFirebaseInitialized ? (
-                    <span className="text-sm text-red-500">(Setup Required)</span>
                   ) : (
-                    <span className="text-sm text-red-500">Disconnected</span>
+                    <span className="text-sm text-red-500">(Setup Required)</span>
                   )}
                 </div>
               </div>

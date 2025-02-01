@@ -1,16 +1,18 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useContext } from "react"
 import { Plus } from "lucide-react"
 import { collection, addDoc } from "firebase/firestore"
-import { getDb, isInitialized } from "@/lib/firebase"
-import AddTaskPopup from "./AddTaskPopup"
+import { getDb } from "@/lib/firebase"
+import { FirebaseContext } from "@/app/(client)/FirebaseProvider"
+import AddTaskPopup from "@/app/components/AddTaskPopup"
 
 export default function AddTaskBar() {
+  const { isReady } = useContext(FirebaseContext)
   const [isPopupOpen, setIsPopupOpen] = useState(false)
 
   const handleAddTask = async (task: { text: string; frequency: string; dueDate?: Date }) => {
-    if (!isInitialized()) return
+    if (!isReady) return
 
     try {
       const db = getDb()

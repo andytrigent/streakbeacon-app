@@ -1,9 +1,10 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { CheckCircle, Circle, Trash2, Edit2 } from "lucide-react"
+import { useState, useEffect, useContext } from "react"
+import { CheckCircle, Circle, Trash2, Edit2, Loader2 } from "lucide-react"
 import { collection, doc, getDocs, updateDoc, deleteDoc } from "firebase/firestore"
-import { getDb, isInitialized } from "@/lib/firebase"
+import { getDb } from "@/lib/firebase"
+import { FirebaseContext } from "@/app/(client)/FirebaseProvider"
 
 type TaskFrequency = "daily" | "weekly" | "monthly" | "biweekly" | "future"
 
@@ -17,13 +18,14 @@ interface Task {
 }
 
 export default function TaskPanel() {
+  const { isReady } = useContext(FirebaseContext)
   const [tasks, setTasks] = useState<Task[]>([])
   const [editingTaskId, setEditingTaskId] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     async function fetchTasks() {
-      if (!isInitialized()) {
+      if (!isReady) {
         setIsLoading(false)
         return
       }
@@ -48,10 +50,10 @@ export default function TaskPanel() {
     }
 
     fetchTasks()
-  }, [])
+  }, [isReady])
 
   const toggleTask = async (id: string) => {
-    if (!isInitialized()) return
+    if (!isReady) return
 
     const task = tasks.find(t => t.id === id)
     if (!task) return
@@ -69,7 +71,7 @@ export default function TaskPanel() {
   }
 
   const deleteTask = async (id: string) => {
-    if (!isInitialized()) return
+    if (!isReady) return
 
     try {
       const db = getDb()
@@ -86,7 +88,7 @@ export default function TaskPanel() {
   }
 
   const saveEditedTask = async (id: string, newText: string) => {
-    if (!isInitialized()) return
+    if (!isReady) return
 
     try {
       const db = getDb()
@@ -104,8 +106,11 @@ export default function TaskPanel() {
     <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md w-full md:w-1/3">
       <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Tasks</h2>
       {isLoading ? (
-        <div className="text-center py-4 text-gray-500">Loading tasks...</div>
-      ) : !isInitialized() ? (
+        <div className="text-center py-4 text-gray-500">
+          <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2" />
+          Loading tasks...
+        </div>
+      ) : !isReady ? (
         <div className="text-center py-4 text-gray-500">
           Please configure Firebase in Settings to manage tasks
         </div>
