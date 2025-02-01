@@ -2,12 +2,22 @@
 
 import { useState, useEffect } from "react"
 import { initFirebase } from "@/lib/firebase"
-import { Download, Moon, Sun, ChevronDown, ChevronUp } from "lucide-react"
+import { Download, Moon, Sun, ChevronDown, ChevronUp, HelpCircle } from "lucide-react"
 import { type FirebaseConfig } from "@/lib/firebase"
+
+const FIREBASE_FIELD_DESCRIPTIONS: Record<keyof FirebaseConfig, string> = {
+  apiKey: "The API key from your Firebase project settings",
+  authDomain: "The authentication domain for your Firebase project",
+  projectId: "The unique identifier for your Firebase project",
+  storageBucket: "The storage bucket URL for your Firebase project",
+  messagingSenderId: "The messaging sender ID for Firebase Cloud Messaging",
+  appId: "The application ID assigned by Firebase"
+}
 
 export default function Settings({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
   const [isDarkMode, setIsDarkMode] = useState(false)
-  const [showFirebaseSetup, setShowFirebaseSetup] = useState(false)
+  const [showFirebaseSetup, setShowFirebaseSetup] = useState(true)
+  const [isFirebaseInitialized, setIsFirebaseInitialized] = useState(false)
   const [firebaseConfig, setFirebaseConfig] = useState<FirebaseConfig>({
     apiKey: "",
     authDomain: "",
@@ -17,6 +27,8 @@ export default function Settings({ isOpen, onClose }: { isOpen: boolean; onClose
     appId: ""
   })
   const [configError, setConfigError] = useState<string>("")
+  const [testStatus, setTestStatus] = useState<{ type: 'success' | 'error', message: string } | null>(null)
+  const [connectionStatus, setConnectionStatus] = useState<'connected' | 'disconnected' | 'checking'>('checking')
 
   const toggleDarkMode = () => {
     setIsDarkMode(!isDarkMode)
@@ -31,23 +43,54 @@ export default function Settings({ isOpen, onClose }: { isOpen: boolean; onClose
     setConfigError("")
   }
 
-  const validateAndSaveConfig = async () => {
+  const testFirebaseConnection = async () => {
     const requiredFields = Object.keys(firebaseConfig) as (keyof FirebaseConfig)[]
     const emptyFields = requiredFields.filter(field => !firebaseConfig[field])
     
     if (emptyFields.length > 0) {
-      setConfigError(`Missing required fields: ${emptyFields.join(", ")}`)
+      setTestStatus({ type: 'error', message: `Missing required fields: ${emptyFields.join(", ")}` })
+      setConnectionStatus('disconnected')
       return
     }
 
+    setConnectionStatus('checking')
     try {
       initFirebase(firebaseConfig)
+      setTestStatus({ type: 'success', message: 'Firebase connection successful!' })
+      setConnectionStatus('connected')
+    } catch (error) {
+      setTestStatus({ type: 'error', message: error instanceof Error ? error.message : 'Failed to connect to Firebase' })
+      setConnectionStatus('disconnected')
+    }
+  }
+
+  const saveFirebaseConfiguration = async () => {
+    try {
       localStorage.setItem('firebaseConfig', JSON.stringify(firebaseConfig))
       setConfigError("")
-      setShowFirebaseSetup(false)
+      setIsFirebaseInitialized(true)
+      setTestStatus({ type: 'success', message: 'Firebase configuration saved successfully!' })
+      setConnectionStatus('connected')
     } catch (error) {
-      setConfigError(error instanceof Error ? error.message : 'Failed to initialize Firebase')
+      setConfigError(error instanceof Error ? error.message : 'Failed to save Firebase configuration')
+      setConnectionStatus('disconnected')
     }
+  }
+
+  const resetFirebaseConfiguration = () => {
+    localStorage.removeItem('firebaseConfig')
+    setFirebaseConfig({
+      apiKey: "",
+      authDomain: "",
+      projectId: "",
+      storageBucket: "",
+      messagingSenderId: "",
+      appId: ""
+    })
+    setIsFirebaseInitialized(false)
+    setConnectionStatus('disconnected')
+    setTestStatus(null)
+    setConfigError("")
   }
 
   // Load saved config on mount
@@ -58,8 +101,11 @@ export default function Settings({ isOpen, onClose }: { isOpen: boolean; onClose
         const config = JSON.parse(savedConfig)
         setFirebaseConfig(config)
         initFirebase(config)
+        setIsFirebaseInitialized(true)
+        setConnectionStatus('connected')
       } catch (error) {
         console.error('Failed to load saved Firebase config:', error)
+        setConnectionStatus('disconnected')
       }
     }
   }, [])
@@ -71,14 +117,29 @@ export default function Settings({ isOpen, onClose }: { isOpen: boolean; onClose
       <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl w-[32rem] max-h-[90vh] overflow-y-auto">
         <h2 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">Settings</h2>
         <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <span className="text-gray-700 dark:text-gray-300">Dark Mode</span>
-            <button onClick={toggleDarkMode} className="p-2 rounded-full bg-gray-200 dark:bg-gray-700">
-              {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-            </button>
-          </div>
-
           <div className="border rounded-lg p-4 bg-gray-50 dark:bg-gray-900">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-lg font-semibold">Firebase Configuration</span>
+                  {connectionStatus === 'connected' ? (
+                    <span className="text-sm text-green-500">Connected ✓</span>
+                  ) : connectionStatus === 'checking' ? (
+                    <span className="text-sm text-yellow-500">Checking...</span>
+                  ) : !isFirebaseInitialized ? (
+                    <span className="text-sm text-red-500">(Setup Required)</span>
+                  ) : (
+                    <span className="text-sm text-red-500">Disconnected</span>
+                  )}
+                </div>
+              </div>
+              <button
+                onClick={() => setShowFirebaseSetup(!showFirebaseSetup)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                {showFirebaseSetup ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+              </button>
+            </div>
             <button
               onClick={() => setShowFirebaseSetup(!showFirebaseSetup)}
               className="w-full flex items-center justify-between text-left"
@@ -103,9 +164,17 @@ export default function Settings({ isOpen, onClose }: { isOpen: boolean; onClose
                 <div className="space-y-4">
                   {Object.keys(firebaseConfig).map((field) => (
                     <div key={field} className="space-y-2">
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                        {field.charAt(0).toUpperCase() + field.slice(1)}
-                      </label>
+                      <div className="flex items-center gap-2">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                          {field.charAt(0).toUpperCase() + field.slice(1)}
+                        </label>
+                        <div className="group relative">
+                          <HelpCircle className="w-4 h-4 text-gray-400" />
+                          <div className="invisible group-hover:visible absolute left-1/2 -translate-x-1/2 bottom-full mb-2 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg whitespace-nowrap">
+                            {FIREBASE_FIELD_DESCRIPTIONS[field as keyof FirebaseConfig]}
+                          </div>
+                        </div>
+                      </div>
                       <input
                         type="text"
                         value={firebaseConfig[field as keyof FirebaseConfig]}
@@ -121,14 +190,44 @@ export default function Settings({ isOpen, onClose }: { isOpen: boolean; onClose
                   <div className="text-red-500 text-sm mt-2">{configError}</div>
                 )}
 
-                <button
-                  onClick={validateAndSaveConfig}
-                  className="w-full bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600"
-                >
-                  Validate &amp; Save Configuration
-                </button>
+                {testStatus && (
+                  <div className={`text-sm mt-2 ${testStatus.type === 'success' ? 'text-green-500' : 'text-red-500'}`}>
+                    {testStatus.message}
+                  </div>
+                )}
+
+                <div className="space-y-2">
+                  <button
+                    onClick={testFirebaseConnection}
+                    className="w-full bg-green-500 text-white p-2 rounded-md hover:bg-green-600"
+                  >
+                    Test Connection
+                  </button>
+
+                  <button
+                    onClick={saveFirebaseConfiguration}
+                    className="w-full bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600"
+                    disabled={connectionStatus !== 'connected'}
+                  >
+                    Save Configuration
+                  </button>
+
+                  <button
+                    onClick={resetFirebaseConfiguration}
+                    className="w-full bg-red-500 text-white p-2 rounded-md hover:bg-red-600"
+                  >
+                    Reset Configuration
+                  </button>
+                </div>
               </div>
             )}
+          </div>
+
+          <div className="flex items-center justify-between">
+            <span className="text-gray-700 dark:text-gray-300">Dark Mode</span>
+            <button onClick={toggleDarkMode} className="p-2 rounded-full bg-gray-200 dark:bg-gray-700">
+              {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+            </button>
           </div>
 
           <button
