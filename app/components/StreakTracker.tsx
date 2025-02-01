@@ -31,7 +31,6 @@ export default function StreakTracker() {
   const generateMonthData = (date: Date) => {
     const data: DayData[][] = []
     const firstDay = new Date(date.getFullYear(), date.getMonth(), 1)
-    const lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 0)
 
     // Start from the last Monday of the previous month
     const startDate = new Date(firstDay)
