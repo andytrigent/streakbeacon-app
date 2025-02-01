@@ -20,6 +20,10 @@ export function FirebaseProvider({ children }: { children: ReactNode }) {
   const [config, setConfig] = useState<FirebaseConfig | null>(null)
 
   const initialize = () => {
+    if (typeof window === 'undefined') {
+      return
+    }
+
     try {
       const savedConfig = localStorage.getItem("firebaseConfig")
       if (savedConfig) {
@@ -36,7 +40,9 @@ export function FirebaseProvider({ children }: { children: ReactNode }) {
   }
 
   useEffect(() => {
-    initialize()
+    if (typeof window !== 'undefined') {
+      initialize()
+    }
   }, [])
 
   return (
