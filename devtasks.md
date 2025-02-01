@@ -19,27 +19,30 @@ This document outlines the **progressive and iterative development** of StreakBe
 
 ---
 
-### **SB002 - Layout & Navigation** ✅
+### **SB002 - Single Page Layout** ✅
 
-**As a user**, I want a clean, minimalist layout with a header and main content area, so that I can focus on my tasks.
+**As a user**, I want a clean, minimalist single-page interface that shows all my important information at once.
 
 - **Acceptance Criteria:**
-  - ✅ Create a `layout.tsx` component with a **header and main content** section.
-  - ✅ Add a **navigation bar** (Home, Dashboard, Settings).
-  - ✅ Implement **light and dark mode toggle**.
-  - ✅ Add comprehensive navigation tests.
+  - ✅ Create a single-page layout with main content sections:
+    - Task Input & List
+    - Streak Graph
+    - Quick Settings/Theme Toggle
+  - ✅ Implement collapsible sections for better space management
+  - ✅ Add light/dark mode toggle in the header
+  - ✅ Ensure all main features are accessible without page navigation
 
 ---
 
-### **SB003 - Homepage Setup** ✅
+### **SB003 - Settings Dialog** ✅
 
-**As a user**, I want a visually appealing homepage that introduces StreakBeacon and allows me to start tracking tasks.
+**As a user**, I want to access settings through a modal dialog without leaving the main view.
 
 - **Acceptance Criteria:**
-  - ✅ Display **app name, tagline, and motivational message**.
-  - ✅ Add a primary **"Start Tracking" button**.
-  - ✅ Implement **basic Tailwind styling** for responsiveness.
-  - ✅ Add responsive design tests.
+  - ✅ Create a settings dialog component using shadcn/ui
+  - ✅ Implement theme preferences in settings
+  - ✅ Add placeholder sections for future settings
+  - ✅ Ensure settings persist across sessions
 
 ---
 
@@ -47,38 +50,41 @@ This document outlines the **progressive and iterative development** of StreakBe
 
 ### **SB004 - Task Input Field**
 
-**As a user**, I want to quickly add tasks using a simple text input, so that I can track my daily activities efficiently.
+**As a user**, I want to quickly add tasks using a simple text input at the top of my task list.
 
 - **Acceptance Criteria:**
-  - Add an **input field** at the bottom of the screen.
-  - Pressing `Enter` should **add a new task**.
-  - Tasks should be **stored in local storage**.
+  - Add a prominent input field in the main view
+  - Support quick task entry with Enter key
+  - Store tasks in local storage
+  - Show immediate feedback on task addition
 
 ---
 
 ### **SB005 - Daily Task List**
 
-**As a user**, I want to see my tasks for today in a checklist format, so that I can mark them as completed.
+**As a user**, I want to see my tasks for today in a clean list format right below the input field.
 
 - **Acceptance Criteria:**
-  - Render **a list of tasks** added for today.
-  - Each task should have a **checkbox** for completion.
-  - Tasks should be **editable and deletable**.
+  - Display tasks in a scrollable list
+  - Add checkboxes for completion
+  - Support inline editing and deletion
+  - Show task count and completion status
 
 ---
 
 ### **SB006 - Streak Tracking Grid**
 
-**As a user**, I want a **grid-based tracker** that visually represents my streaks, so that I can track my progress over time.
+**As a user**, I want to see my streak graph prominently displayed above my task list.
 
 - **Acceptance Criteria:**
-  - Display a **7x5 grid (weeks x days)** inspired by GitHub's contribution graph.
-  - Color-coded squares:
-    - **No tasks** → Light gray.
-    - **1-2 tasks** → Light green.
-    - **3-5 tasks** → Medium green.
-    - **6+ tasks** → Dark green.
-  - Clicking on a day should **show task details**.
+  - Implement GitHub-style contribution graph
+  - Color code based on task completion:
+    - No tasks → Light gray
+    - 1-2 tasks → Light green
+    - 3-5 tasks → Medium green
+    - 6+ tasks → Dark green
+  - Show task details on hover
+  - Make it responsive for all screen sizes
 
 ---
 

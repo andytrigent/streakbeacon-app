@@ -1,65 +1,81 @@
-import Link from "next/link";
+import { ModeToggle } from "@/components/mode-toggle";
 import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
+import { Card } from "@/components/ui/card";
+import { Plus } from "lucide-react";
+import { SettingsDialog } from "@/components/settings-dialog";
 
 export default function HomePage() {
   return (
-    <div className="flex flex-col items-center justify-center min-h-[calc(100vh-4rem)] py-12 text-center">
-      <div className="space-y-6 max-w-3xl px-4">
-        <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl lg:text-7xl">
-          Shine a light on your progress
-        </h1>
-        <p className="mx-auto max-w-[700px] text-gray-500 md:text-xl dark:text-gray-400">
-          Stay consistent, stay unstoppable! Track your daily tasks and build lasting habits with our intuitive streak-based system.
-        </p>
-        <div className="space-y-4">
-          <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <Link href="/dashboard">
-              <Button size="lg" className="w-full sm:w-auto">
-                Start Tracking
-                <ArrowRight className="ml-2 h-4 w-4" />
+    <div className="min-h-screen bg-background">
+      {/* Header Bar */}
+      <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container max-w-5xl py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <h1 className="text-xl font-semibold">🌟 StreakBeacon</h1>
+            </div>
+            <div className="flex items-center space-x-2">
+              <ModeToggle />
+              <SettingsDialog />
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="container max-w-5xl py-8">
+        <div className="space-y-8">
+          {/* Progress Section */}
+          <section className="space-y-3">
+            <h2 className="text-lg font-semibold">Your Progress</h2>
+            <Card className="overflow-hidden border rounded-lg shadow-sm">
+              <div className="h-48 flex items-center justify-center text-muted-foreground p-6">
+                Streak Graph Coming Soon
+              </div>
+            </Card>
+          </section>
+
+          {/* Tasks Section */}
+          <section className="space-y-3">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold">Today&apos;s Tasks</h2>
+              <Button size="sm" className="bg-emerald-500 hover:bg-emerald-600">
+                <Plus className="h-4 w-4 mr-1.5" />
+                Add Task
               </Button>
-            </Link>
-            <Link href="/about">
-              <Button variant="outline" size="lg" className="w-full sm:w-auto">
-                Learn More
-              </Button>
-            </Link>
-          </div>
+            </div>
+            <Card className="overflow-hidden border rounded-lg shadow-sm">
+              <div className="p-6">
+                {/* Task Input (will be shown when Add Task is clicked) */}
+                <div className="hidden">
+                  {/* Task input form will go here */}
+                </div>
+
+                {/* Task List */}
+                <div className="text-center text-muted-foreground py-8">
+                  No tasks added yet. Click &quot;Add Task&quot; to get started!
+                </div>
+              </div>
+            </Card>
+          </section>
+
+          {/* Stats Grid */}
+          <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Card className="overflow-hidden border rounded-lg shadow-sm p-4">
+              <h3 className="text-sm font-medium text-muted-foreground">Current Streak</h3>
+              <p className="text-2xl font-bold mt-1">0 days</p>
+            </Card>
+            <Card className="overflow-hidden border rounded-lg shadow-sm p-4">
+              <h3 className="text-sm font-medium text-muted-foreground">Tasks Completed</h3>
+              <p className="text-2xl font-bold mt-1">0 / 0</p>
+            </Card>
+            <Card className="overflow-hidden border rounded-lg shadow-sm p-4">
+              <h3 className="text-sm font-medium text-muted-foreground">Longest Streak</h3>
+              <p className="text-2xl font-bold mt-1">0 days</p>
+            </Card>
+          </section>
         </div>
-      </div>
-      
-      <div className="mt-16 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 px-4">
-        <div className="flex flex-col items-center space-y-2 p-4 rounded-lg border bg-card text-card-foreground shadow-sm">
-          <div className="p-2 bg-primary/10 rounded-full">
-            📊
-          </div>
-          <h3 className="text-xl font-semibold">Visual Progress</h3>
-          <p className="text-sm text-muted-foreground text-center">
-            Track your consistency with our GitHub-style contribution graph
-          </p>
-        </div>
-        
-        <div className="flex flex-col items-center space-y-2 p-4 rounded-lg border bg-card text-card-foreground shadow-sm">
-          <div className="p-2 bg-primary/10 rounded-full">
-            🎯
-          </div>
-          <h3 className="text-xl font-semibold">Stay Focused</h3>
-          <p className="text-sm text-muted-foreground text-center">
-            Organize tasks by categories and prioritize what matters
-          </p>
-        </div>
-        
-        <div className="flex flex-col items-center space-y-2 p-4 rounded-lg border bg-card text-card-foreground shadow-sm">
-          <div className="p-2 bg-primary/10 rounded-full">
-            🔒
-          </div>
-          <h3 className="text-xl font-semibold">Privacy First</h3>
-          <p className="text-sm text-muted-foreground text-center">
-            All your data stays local - no account needed
-          </p>
-        </div>
-      </div>
+      </main>
     </div>
   );
 }
