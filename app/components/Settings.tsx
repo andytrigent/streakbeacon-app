@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useContext } from "react"
-import { Download, Moon, Sun, ChevronDown, ChevronUp, HelpCircle, Settings as SettingsIcon } from "lucide-react"
+import { Download, Moon, Sun, ChevronDown, ChevronUp, HelpCircle } from "lucide-react"
 import { type FirebaseConfig, initFirebase } from "@/lib/firebase"
 import { FirebaseContext } from "@/app/providers/FirebaseProvider"
 
