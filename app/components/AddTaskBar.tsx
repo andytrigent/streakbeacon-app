@@ -11,17 +11,13 @@ export default function AddTaskBar() {
   const { isReady } = useContext(FirebaseContext)
   const [isPopupOpen, setIsPopupOpen] = useState(false)
 
-  const handleAddTask = async (task: { text: string; frequency: string; dueDate?: Date }) => {
+  const handleAddTask = async (task: { text: string; frequency: string; dueDate?: Date; completed: boolean; createdAt: Date }) => {
     if (!isReady) return
 
     try {
       const db = getDb()
       const tasksRef = collection(db, "tasks")
-      await addDoc(tasksRef, {
-        ...task,
-        completed: false,
-        createdAt: new Date()
-      })
+      await addDoc(tasksRef, task)
     } catch (error) {
       console.error("Error adding task:", error)
     } finally {
