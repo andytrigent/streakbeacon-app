@@ -21,6 +21,7 @@ export default function TaskPanel() {
   const { isReady } = useContext(FirebaseContext)
   const [tasks, setTasks] = useState<Task[]>([])
   const [editingTaskId, setEditingTaskId] = useState<string | null>(null)
+  const [editingText, setEditingText] = useState("")
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
@@ -84,7 +85,10 @@ export default function TaskPanel() {
   }
 
   const startEditingTask = (id: string) => {
+    const task = tasks.find(t => t.id === id)
+    if (!task) return
     setEditingTaskId(id)
+    setEditingText(task.text)
   }
 
   const saveEditedTask = async (id: string, newText: string) => {
@@ -99,6 +103,7 @@ export default function TaskPanel() {
       console.error("Error updating task:", error)
     } finally {
       setEditingTaskId(null)
+      setEditingText("")
     }
   }
 
@@ -131,9 +136,15 @@ export default function TaskPanel() {
               {editingTaskId === task.id ? (
                 <input
                   type="text"
-                  value={task.text}
-                  onChange={(e) => saveEditedTask(task.id, e.target.value)}
-                  onBlur={() => setEditingTaskId(null)}
+                  value={editingText}
+                  onChange={(e) => setEditingText(e.target.value)}
+                  onBlur={() => saveEditedTask(task.id, editingText)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      saveEditedTask(task.id, editingText);
+                    }
+                  }}
                   autoFocus
                   className="flex-grow bg-transparent border-b border-gray-300 dark:border-gray-600 focus:outline-none focus:border-blue-500"
                 />

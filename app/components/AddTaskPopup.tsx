@@ -2,9 +2,9 @@
 
 import { useState, useContext } from "react"
 import { X } from "lucide-react"
-import { collection, addDoc } from "firebase/firestore"
-import { getDb } from "@/lib/firebase"
 import { FirebaseContext } from "@/app/providers/FirebaseProvider"
+
+// persistence is handled by the parent component
 
 type TaskFrequency = "daily" | "weekly" | "monthly" | "biweekly" | "future"
 
@@ -29,31 +29,24 @@ export default function AddTaskPopup({ isOpen, onClose, onAddTask }: AddTaskPopu
   const [frequency, setFrequency] = useState<TaskFrequency>("daily")
   const [dueDate, setDueDate] = useState<Date | undefined>(undefined)
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (!taskText.trim() || !isReady) return
 
-    try {
-      const db = getDb()
-      const tasksRef = collection(db, "tasks")
-      const newTask = {
-        text: taskText,
-        frequency,
-        dueDate,
-        completed: false,
-        createdAt: new Date()
-      }
-      
-      const docRef = await addDoc(tasksRef, newTask)
-      onAddTask({ ...newTask, id: docRef.id })
-      
-      setTaskText("")
-      setFrequency("daily")
-      setDueDate(undefined)
-      onClose()
-    } catch (error) {
-      console.error("Error adding task:", error)
+    const newTask = {
+      text: taskText,
+      frequency,
+      dueDate,
+      completed: false,
+      createdAt: new Date()
     }
+
+    onAddTask(newTask)
+
+    setTaskText("")
+    setFrequency("daily")
+    setDueDate(undefined)
+    onClose()
   }
 
   if (!isOpen) return null
